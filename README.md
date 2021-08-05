@@ -51,14 +51,17 @@ Using callbacks as props, we can do both of these things pretty easily!
 We'll work from the 'top' layer down. The application technically starts with
 `src/index.js`, where the `Matrix` component is rendered:
 
-```js
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import learnSymbol from './data.js'
-import Matrix from './Matrix.js'
+```jsx
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import learnSymbol from "./data.js";
+import Matrix from "./Matrix.js";
 
-ReactDOM.render(<Matrix values={learnSymbol} />, document.getElementById('root'));
+ReactDOM.render(
+  <Matrix values={learnSymbol} />,
+  document.getElementById("root")
+);
 ```
 
 This code is already provided, but take a moment to note the setup. The
@@ -75,41 +78,39 @@ Let's explore how this works before updating it to be interactive.
 
 Let's look at the current setup of the `Matrix` component:
 
-```js
-import React, { Component } from 'react';
-import learnSymbol from './data.js'
-import Cell from './Cell.js'
-import ColorSelector from './ColorSelector.js'
+```jsx
+import React, { Component } from "react";
+import learnSymbol from "./data.js";
+import Cell from "./Cell.js";
+import ColorSelector from "./ColorSelector.js";
 
 export default class Matrix extends Component {
-
   constructor() {
-    super()
+    super();
   }
 
-  genRow = (vals) => (
-    vals.map((val, idx) => <Cell key={idx} color={val} />)
-  )
+  genRow = (vals) => vals.map((val, idx) => <Cell key={idx} color={val} />);
 
-  genMatrix = () => (
-    this.props.values.map((rowVals, idx) => <div key={idx} className="row">{this.genRow(rowVals)}</div>)
-  )
+  genMatrix = () =>
+    this.props.values.map((rowVals, idx) => (
+      <div key={idx} className="row">
+        {this.genRow(rowVals)}
+      </div>
+    ));
 
   render() {
     return (
       <div id="app">
         <ColorSelector />
-        <div id="matrix">
-          {this.genMatrix()}
-        </div>
+        <div id="matrix">{this.genMatrix()}</div>
       </div>
-    )
+    );
   }
 }
 
 Matrix.defaultProps = {
-  values: learnSymbol
-}
+  values: learnSymbol,
+};
 ```
 
 `Matrix`, as seen above, renders a `div` containing the `ColorSelector`
@@ -130,27 +131,22 @@ Looking briefly at `Cell`, we can see that this `color` prop is used to set the
 initial state of the component, and that state value is then used to modify the
 background color of the returned `div`:
 
-```js
-import React, { Component } from 'react';
+```jsx
+import React, { Component } from "react";
 
 export default class Cell extends Component {
-  
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
-      color: this.props.color
-    }
+      color: this.props.color,
+    };
   }
-  
+
   render() {
     return (
-      <div className="cell"
-           style={{backgroundColor: this.state.color}}
-      >
-      </div>
-    )
+      <div className="cell" style={{ backgroundColor: this.state.color }}></div>
+    );
   }
-  
 }
 ```
 
@@ -181,7 +177,7 @@ state, as well as the method that will _update_ that state, in the
 In `src/Matrix.js`, there is no `state` set up. As we need a place to keep track
 of the selected color, let's add it here:
 
-```js
+```jsx
 // src/Matrix.js
 ...
 
@@ -203,7 +199,7 @@ hexadecimal color you'd like as default.
 With a default color value set in state, we now need to add a method that can
 _change_ that state value:
 
-```js
+```jsx
 // src/Matrix.js
 ...
 
@@ -226,7 +222,7 @@ As mentioned, `ColorSelector` is the interface where users will be able to
 select a color, so it will need access to `setSelectedColor`. We can
 pass the needed function down as a prop:
 
-```js
+```jsx
 // src/Matrix.js
 ...
 
@@ -247,7 +243,7 @@ render() {
 change it. We can pass this in to every `Cell` returned by `genRow()` as a prop
 called `selectedColor`:
 
-```js
+```jsx
 // src/Matrix.js
 ...
 genRow = (vals) => (
@@ -259,7 +255,7 @@ genRow = (vals) => (
 Both child components are now receiving new props. After all the changes,
 `Matrix` looks like this:
 
-```js
+```jsx
 import React, { Component } from 'react';
 import learnSymbol from './data.js'
 import Cell from './Cell.js'
@@ -310,7 +306,7 @@ Matrix.defaultProps = {
 
 The `ColorSelector` component already has some basic `div`s rendering:
 
-```js
+```jsx
 // src/ColorSelector.js
 ...
 makeColorSwatches = () => (
@@ -338,8 +334,15 @@ hexadecimal color value of that `div` becomes the selected color in `Matrix`. Fo
 click events, we know we'll have to add an event and provide a callback on the `div`
 element itself:
 
-```js
-return <div onClick={callback} key={idx} className="color-swatch" style={{backgroundColor: str}}/>
+```jsx
+return (
+  <div
+    onClick={callback}
+    key={idx}
+    className="color-swatch"
+    style={{ backgroundColor: str }}
+  />
+);
 ```
 
 Inside this callback, we'll call `this.props.setSelectedColor()`, but where
@@ -353,7 +356,7 @@ So far, we've used class methods as callbacks, `this.handleClick` and
 `this.handleSubmit`. This time is a little different - we'll need to write the
 function inside the `map` to access the color values needed:
 
-```js
+```jsx
 ...
 makeColorSwatches = () => (
   ["#F00", "#F80", "#FF0", "#0F0", "#00F", "#508", "#90D", "#FFF", "#000"].map((str, idx) => {
@@ -373,7 +376,7 @@ To finish up this application, we now need to configure our `Cell` component so 
 when it is clicked, it changes color to the currently selected color. In `Matrix`,
 we're already passing down the selected color in `genRow()`:
 
-```js
+```jsx
 // src/Matrix.js
 ...
 genRow = (vals) => (
@@ -386,33 +389,32 @@ So we should have `this.props.selectedColor` at our disposal. For `Cell`, we can
 click event, just like in `ColorSelector`, only this time, we'll use a `handleClick` class
 method like we've seen before:
 
-```js
-import React, { Component } from 'react';
+```jsx
+import React, { Component } from "react";
 
 export default class Cell extends Component {
-  
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
-      color: this.props.color
-    }
+      color: this.props.color,
+    };
   }
-  
+
   handleClick = () => {
     this.setState({
-      color: this.props.selectedColor
-    })
-  }
+      color: this.props.selectedColor,
+    });
+  };
 
   render() {
     return (
-      <div onClick={this.handleClick} className="cell"
-           style={{backgroundColor: this.state.color}}
-      >
-      </div>
-    )
+      <div
+        onClick={this.handleClick}
+        className="cell"
+        style={{ backgroundColor: this.state.color }}
+      ></div>
+    );
   }
-  
 }
 ```
 
@@ -436,4 +438,3 @@ One way of thinking about this is that _information_ is passed **down** from
 parent to child. Sometimes, that information can contain the instructions, in
 the form of callbacks, for sending _actions_ **up**. This pattern is useful to
 keep in mind as we build out more complex component trees.
-
